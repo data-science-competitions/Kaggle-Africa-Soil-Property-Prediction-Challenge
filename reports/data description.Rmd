@@ -1,0 +1,135 @@
+---
+title: "Data Description"
+author: "H. LUSTIGER"
+date: "Sunday, May 10, 2015"
+geometry: margin=1.5cm
+output:
+  pdf_document:
+      fig_height: 4
+      fig_width: 10
+      highlight: tango
+---
+        
+```{r global_options, include=FALSE, echo=FALSE}
+require(knitr)
+opts_chunk$set(fig.width=8, fig.height=4, fig.path='figs/', dpi=500,
+               echo=FALSE, warning=FALSE, message=FALSE, results='hide')
+```
+
+```{r pandoc_options, include=FALSE, echo=FALSE}
+require(pander)
+panderOptions('table.split.table', Inf)
+panderOptions('digits', 3)
+panderOptions('round', 3)
+panderOptions('keep.trailing.zeros', TRUE)
+# performance.table <- table(some_table)
+# pandoc.table(performance.table, style = "rmarkdown", justify = 'left', caption = 'Performance table') 
+```
+
+```{r load_the_data, cache=FALSE}
+train <- read.csv("../data/train.csv.gz")   
+set.seed(2014)
+inTrain <- sample(1:nrow(train),round(0.7*nrow(train)))
+```
+
+<http://www.kaggle.com/c/afsis-soil-properties/data>
+        
+# Dependent Variables
+        
+`SOC`, `pH`, `Ca`, `P`, `Sand` are the five target variables for predictions.
+The data have been monotonously transformed from the original measurements and
+thus include negative values. 
+
+```{r, results='asis'}
+c1 <- c("[,3596]","[,3597]","[,3598]","[,3599]","[,3600]")
+c2 <- c("Ca","P","pH","SOC","Sand")
+c3 <- c("Mehlich-3 extractable Calcium","Mehlich-3 extractable Phosphorus",
+        "pH values","Soil organic carbon","Sand content")
+y.table <- data.frame("Col #"=c1,"Variable"=c2,"Description"=c3)
+pandoc.table(y.table, style = "simple", justify = 'left')#, 
+             #caption = "Dependent Variables") 
+```
+
+        
+```{r DD_Ycorr, results='markup', eval=TRUE, fig.height=4, fig.width=8}
+require(corrplot)
+corrplot(cor(
+        subset(train[inTrain,], select=Ca:Sand)), method = "circle",
+        mar = c(0,0,2,0), type = "lower",
+        title = "A visualization of the 5 dependent variables correlation matrix")
+```
+
+\newpage
+
+# Predictors Variables
+
+```{r, results='asis'}
+c1 <- c("[,1]")
+c2 <- c("PIDN")
+c3 <- c("Unique soil sample identifier")
+ID.table <- data.frame("Col #"=c1,"Variable"=c2,"Description"=c3)
+pandoc.table(ID.table, style = "simple", justify = 'left')#, 
+             #caption = "Dependent Variables") 
+```
+        
+## Infrared Spectrom Variables Group 
+
+[Near-infrared (NIR) spectroscopy][NIR] is a technique that measures the amount
+of heat absorbed or emitted by certain materials.
+
+The data set contains 3,578 mid-infrared absorbance measurements in the
+7500 to 600 [$cm^{-1}$] range (1333 to 16,667 [$nm$]).
+We suggest you to remove spectra CO2 bands which are in the region m2379.76 to
+m2352.76, but you do not have to.
+
+```{r, results='asis'}
+c1 <- c("[,2-3579]")
+c2 <- c("m7497.96 - m599.76")
+c3 <- c("mid-infrared absorbance measurements")
+X1.table <- data.frame("Col #"=c1,"Variable"=c2,"Description"=c3)
+pandoc.table(X1.table, style = "simple", justify = 'left')#, 
+             #caption = "Dependent Variables") 
+```
+
+        
+## Spatial Variables Group
+        
+We have also included some potential spatial predictors from remote sensing data 
+sources.
+Short variable descriptions are provided below and additional descriptions can
+be found at [AfSIS data](http://www.africasoils.net/data/datasets).
+The data have been mean centered and scaled.
+
+```{r, results='asis'}
+c1 <- c("[,3580]","[,3581]","[,3582]","[,3583]","[,3584]","[,3585]","[,3586]",
+        "[,3587]","[,3588]","[,3589]","[,3590]","[,3591]","[,3592]","[,3593]",
+        "[,3594]","[,3595]")
+c2 <- c("BSAN","BSAS","BSAV","CTI","ELEV","EVI","LSTD","LSTN","Ref1","Ref2",
+        "Ref3","Ref7","Reli","TMAP","TMFI","Depth")
+c3 <- c(
+"Near-infraredaverage average long-term Black Sky Albedo measurements",
+"Short-wave average long-term Black Sky Albedo measurements",
+"Visible average long-term Black Sky Albedo measurements",
+"Compound topographic index calculated from Shuttle Radar Topography Mission elevation data",
+"Shuttle Radar Topography Mission elevation data",
+"Average long-term Enhanced Vegetation Index from MODIS satellite images",
+"Average long-term Land Surface Temperatures from MODIS satellite images (day time temperature)",
+"Average long-term Land Surface Temperatures from MODIS satellite images (night time temperature)",
+"Average long-term Reflectance measurements from MODIS satellite images (blue)",
+"Average long-term Reflectance measurements from MODIS satellite images (red)",
+"Average long-term Reflectance measurements from MODIS satellite images (near-infrared)",
+"Average long-term Reflectance measurements from MODIS satellite images (mid-infrared)",
+"Topographic Relief calculated from Shuttle Radar Topography mission elevation data", 
+"Average long-term Tropical Rainfall Monitoring Mission data (mean annual precipitation)",     
+"Average long-term Tropical Rainfall Monitoring Mission data (modified Fournier index)",     
+"Depth of the soil sample (2 categories: 'Topsoil', 'Subsoil')")
+X2.table <- data.frame("Col #"=c1,"Variable"=c2,"Description"=c3)
+pandoc.table(X2.table, style = "simple", justify = 'left')#, 
+             #caption = "Dependent Variables") 
+```
+
+
+
+\newpage
+
+[NIR]: http://en.wikipedia.org/wiki/Near-infrared_spectroscopy
