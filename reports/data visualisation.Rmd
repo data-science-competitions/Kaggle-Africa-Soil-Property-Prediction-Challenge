@@ -1,0 +1,58 @@
+---
+title: "Data Visuallisation"
+author: "H. LUSTIGER"
+date: "Wednesday, May 13, 2015"
+geometry: margin=3cm
+output:
+  pdf_document:
+      fig_height: 4
+      fig_width: 10
+      highlight: tango
+---
+        
+```{r global_options, include=FALSE, echo=FALSE}
+require(knitr)
+opts_chunk$set(fig.width=8, fig.height=4, fig.path='figs/', dpi=500,
+               echo=FALSE, warning=FALSE, message=FALSE, results='hide')
+```
+
+```{r pandoc_options, include=FALSE, echo=FALSE}
+require(pander)
+panderOptions('table.split.table', Inf)
+panderOptions('digits', 3)
+panderOptions('round', 3)
+panderOptions('keep.trailing.zeros', TRUE)
+# performance.table <- table(some_table)
+# pandoc.table(performance.table, style = "rmarkdown", justify = 'left', caption = 'Performance table') 
+```
+
+```{r load_the_data, cache=FALSE}
+# source("lib/load_data.R")
+train.infrared <- read.csv("../data/train.csv.gz")[,2:3579] 
+n <- nrow(train.infrared)
+p <- ncol(train.infrared)
+```
+        
+# Auto-Correlation Matrix of Infrared Variables
+
+Invetigate the correlation structure of the infrared variables of the training 
+data[^1]
+
+```{r acmatrix, fig.width=10, fig.height=10}
+require(corrplot)
+W <- cor(train.infrared[,seq(1,p,by=100)])
+corrplot(W, method = "color" ,addgrid.col=NA, order = "original",
+         mar = c(0,0,4,0), #tl.pos = "n",
+         title="A visualization of the infrared variables correlation matrix")
+```
+
+* `m7497.96`-`m3833.84` variables are strongly correlated to each other. 
+  Removing them from the model might improve model performance.
+
+
+        
+
+
+
+
+[^1]: Due to technical issues we plot only the variable in places 1,101,201,...,3501
