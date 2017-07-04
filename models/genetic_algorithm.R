@@ -35,9 +35,13 @@ fitness <- function(string){
         x_te = x[(n_tr+1):n,]
         y_te = y[(n_tr+1):n]
         # build the model
-        mdl <- lm(y ~ ., data = data.frame(x_tr, y=y_tr))
+        mdl <- svm(x=x_tr,
+                   y=y_tr,
+                   scale=FALSE, cost=1,
+                   cachesize=1024*10)
         # evaluate the model
-        y_hat = predict(mdl, newdata=x_te)
+        y_hat <- predict(mdl, newdata=x_te)
+        
         RMSE = sqrt(mean((y_hat-y_te)^2))
         return(-RMSE)
         

@@ -16,6 +16,7 @@ packages.loader <- function(packages.list){
         ) # end suppressPackageStartupMessages
 } # end functions packages.loader
 packages.list = c("GA","memoise",             # Genetic algorithms
+                  "e1071",                    # SVM
                   "hashmap",                  # Map keys to values
                   "snow","doRNG","doParallel" # Parallel computing
                   )
