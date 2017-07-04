@@ -6,7 +6,7 @@
 #
 # <https://www.jstatsoft.org/article/view/v053i04/v53i04.pdf>
 set.seed(1850)
-label <- c("Ca","P","pH","SOC","Sand")[5]
+label <- c("Ca","P","pH","SOC","Sand")[1]
 
 
 ############################
@@ -69,18 +69,20 @@ GA <- ga(type="binary", fitness=mfitness,
          min=10, max=100,
          monitor=plot,
          seed=2047)
-summary(GA)
-
-
 forget(mfitness) # clear cache
 stopCluster(cl) # shut down the cluster
+
+
+###########
+# Summary #
+###########
+summary(GA)
 
 
 #######################
 # Export the solution #
 #######################
-# solution = matrix(drop(GA@solution), nrow=1, dimnames=attr(GA@solution,"dimnames"))
-solution = data.frame(t(drop(GA@solution)))
+solution = data.frame(label=label,t(drop(GA@solution)))
 destfile = file.path(getwd(),"data","feature_selection_GA.csv")
 
 # Check if file exists then add the new solution, otherwise create a new file
