@@ -38,8 +38,8 @@ fitness <- function(string){
         mdl <- lm(y ~ ., data = data.frame(x_tr, y=y_tr))
         # evaluate the model
         y_hat = predict(mdl, newdata=x_te)
-        MSE = sqrt(sum((y_hat-y_te)^2))
-        return(1/MSE)
+        MSE = sqrt(mean((y_hat-y_te)^2))
+        return(-MSE)
         
 }# fitness
 
@@ -51,16 +51,17 @@ fitness <- function(string){
 #' used to speed up calculations by using cached results. This is easily 
 #' obtained using the memoise package.
 mfitness <- memoise(fitness)
-               
+
 
 ###################
 # Start Evolution #
 ###################                         
-GA <- ga(type="binary", fitness=fitness,
+GA <- ga(type="binary", fitness=mfitness,
          # Genetic nuances 
          #selection=gaperm_nlrSelection,
          #mutation=gareal_raMutation,
-         popSize=8*4,
+         #elitism=8,
+         popSize=8*5,
          maxiter=100, run=100,
          names=colnames(train.infrared),
          nBits=ncol(train.infrared),
@@ -73,3 +74,29 @@ summary(GA)
 
 forget(mfitness) # clear cache
 stopCluster(cl) # shut down the cluster
+
+
+#######################
+# Export the solution #
+#######################
+# solution = matrix(drop(GA@solution), nrow=1, dimnames=attr(GA@solution,"dimnames"))
+solution = data.frame(t(drop(GA@solution)))
+destfile = file.path(getwd(),"data","feature_selection_GA.csv")
+
+# Check if file exists then add the new solution, otherwise create a new file
+if(file.exists(destfile)){
+        
+        temp = read.csv(destfile)
+        temp = rbind(temp,solution)
+        write.csv(temp, destfile, row.names=FALSE)
+        
+} else {
+        
+        write.csv(solution, destfile, row.names=FALSE)
+        
+}
+
+
+
+
+
