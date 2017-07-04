@@ -82,7 +82,7 @@ summary(GA)
 #######################
 # Export the solution #
 #######################
-solution = data.frame(label=label,t(drop(GA@solution)))
+solution = data.frame(label=label,t(drop(GA@solution)[1,]))
 destfile = file.path(getwd(),"data","feature_selection_GA.csv")
 
 # Check if file exists then add the new solution, otherwise create a new file
