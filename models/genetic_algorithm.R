@@ -38,8 +38,8 @@ fitness <- function(string){
         mdl <- lm(y ~ ., data = data.frame(x_tr, y=y_tr))
         # evaluate the model
         y_hat = predict(mdl, newdata=x_te)
-        MSE = sqrt(mean((y_hat-y_te)^2))
-        return(-MSE)
+        RMSE = sqrt(mean((y_hat-y_te)^2))
+        return(-RMSE)
         
 }# fitness
 
