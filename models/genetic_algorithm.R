@@ -25,9 +25,8 @@ fitness <- function(string){
         inc = which(string==1)
         # resample the data
         n = nrow(train.infrared)
-        s = sample(n, replace=TRUE)
-        x = train.infrared[s,inc]
-        y = train.Y[s,label]
+        x = train.infrared[,inc]
+        y = train.Y[,label]
         # split the data
         n_tr = round(n*0.7)
         x_tr = x[1:n_tr,]
@@ -37,6 +36,7 @@ fitness <- function(string){
         # build the model
         mdl <- svm(x=x_tr,
                    y=y_tr,
+                   kernel="radial",
                    scale=FALSE, cost=1,
                    cachesize=1024*10)
         # evaluate the model
@@ -46,6 +46,16 @@ fitness <- function(string){
         return(-RMSE)
         
 }# fitness
+
+
+###############
+# Suggestions #
+###############
+# Sample the relevant spectrum in windows of W (prime numbers)
+prime_numbers = c(2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97)
+suggestions = matrix(0, nrow=length(prime_numbers), ncol=ncol(train.infrared))
+for(i in 1:length(prime_numbers))
+        suggestions[i,seq(from=1,to=3578, by=prime_numbers[i])] = 1 
 
 
 ###############
@@ -64,13 +74,14 @@ GA <- ga(type="binary", fitness=mfitness,
          # Genetic nuances 
          #selection=gaperm_nlrSelection,
          #mutation=gareal_raMutation,
-         #elitism=8,
+         #elitism=dim(suggestions)[2],
          popSize=8*5,
          maxiter=100, run=100,
          names=colnames(train.infrared),
          nBits=ncol(train.infrared),
+         suggestions=suggestions,
          parallel=TRUE,
-         min=10, max=100,
+         min=10, max=100, # not relevant in case of type="binary"
          monitor=plot,
          seed=2047)
 forget(mfitness) # clear cache
@@ -86,7 +97,9 @@ summary(GA)
 #######################
 # Export the solution #
 #######################
-solution = data.frame(label=label,t(drop(GA@solution)[1,]))
+solution = drop(GA@solution)
+if (!is.null(dim(solution))) solution = solution[,1]
+solution = data.frame(label=label,t(solution))
 destfile = file.path(getwd(),"data","feature_selection_GA.csv")
 
 # Check if file exists then add the new solution, otherwise create a new file
