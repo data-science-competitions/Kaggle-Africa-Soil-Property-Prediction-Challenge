@@ -5,13 +5,26 @@
 #  \____/_/   \_\ 
 #
 # <https://www.jstatsoft.org/article/view/v053i04/v53i04.pdf>
-set.seed(1850)
 label <- c("Ca","P","pH","SOC","Sand")[1]
 
 
-############################
-# Setup Parallel Computing #
-############################
+#########
+# Setup #
+#########
+destfile = file.path(getwd(),"data","feature_selection_GA.csv")
+# Copy the data
+X = train.infrared
+y = train.Y[,label]
+# Setup the computational nuances of the model training phase
+fitControl <- trainControl(
+        ## k-fold CV        
+        method="cv",
+        number=5,
+        seeds=(803):(803+5+1),
+        #repeats=1, # relevant only when method = "repeatedcv"        
+        allowParallel=TRUE,
+        returnData=FALSE) # saves memory
+# Parallel Computing 
 cl <- makeCluster(detectCores(), type="PSOCK", outfile="")   
 registerDoParallel(cl)
 
@@ -25,24 +38,16 @@ fitness <- function(string){
         inc = which(string==1)
         # resample the data
         n = nrow(train.infrared)
-        x = train.infrared[,inc]
-        y = train.Y[,label]
-        # split the data
-        n_tr = round(n*0.7)
-        x_tr = x[1:n_tr,]
-        y_tr = y[1:n_tr]
-        x_te = x[(n_tr+1):n,]
-        y_te = y[(n_tr+1):n]
+        x = X[,inc]
+        y = y
         # build the model
-        mdl <- svm(x=x_tr,
-                   y=y_tr,
-                   kernel="radial",
-                   scale=FALSE, cost=1,
-                   cachesize=1024*10)
+        mdl <- train(x=x, y=y,
+                     method=libSVM(), 
+                     trControl=fitControl,
+                     tuneGrid=expand.grid(cost=1), 
+                     preProc=c("center", "scale"))
         # evaluate the model
-        y_hat <- predict(mdl, newdata=x_te)
-        
-        RMSE = sqrt(mean((y_hat-y_te)^2))
+        RMSE = mean(mdl$resample$RMSE)
         return(-RMSE)
         
 }# fitness
@@ -56,6 +61,15 @@ prime_numbers = c(2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,
 suggestions = matrix(0, nrow=length(prime_numbers), ncol=ncol(train.infrared))
 for(i in 1:length(prime_numbers))
         suggestions[i,seq(from=1,to=3578, by=prime_numbers[i])] = 1 
+# Get the previous creatures
+if(file.exists(destfile)){
+        
+        temp = read.csv(destfile)
+        previous_creatures = temp[temp$label %in% label,-1]
+        
+        if(nrow(previous_creatures)>0)
+                suggestions = rbind(suggestions,data.matrix(previous_creatures))
+} 
 
 
 ###############
@@ -100,7 +114,6 @@ summary(GA)
 solution = drop(GA@solution)
 if (!is.null(dim(solution))) solution = solution[,1]
 solution = data.frame(label=label,t(solution))
-destfile = file.path(getwd(),"data","feature_selection_GA.csv")
 
 # Check if file exists then add the new solution, otherwise create a new file
 if(file.exists(destfile)){
