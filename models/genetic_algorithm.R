@@ -25,7 +25,8 @@ fitControl <- trainControl(
         allowParallel=TRUE,
         returnData=FALSE) # saves memory
 # Parallel Computing 
-cl <- makeCluster(detectCores(), type="PSOCK", outfile="")   
+availableCores = detectCores()
+cl <- makeCluster(availableCores, type="PSOCK", outfile="")   
 registerDoParallel(cl)
 
 
