@@ -89,13 +89,13 @@ GA <- ga(type="binary", fitness=mfitness,
          #selection=gaperm_nlrSelection,
          #mutation=gareal_raMutation,
          #elitism=dim(suggestions)[2],
-         popSize=8*5,
+         popSize=availableCores*2,
          maxiter=100, run=100,
          names=colnames(train.infrared),
          nBits=ncol(train.infrared),
          suggestions=suggestions,
          parallel=TRUE,
-         min=10, max=100, # not relevant in case of type="binary"
+         min=10, max=100, # not relevant in the case of type="binary"
          monitor=plot,
          seed=2047)
 forget(mfitness) # clear cache
