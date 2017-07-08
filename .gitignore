@@ -17,3 +17,4 @@ vignettes/*.pdf
 *.dropbox
 data/feature_selection.csv
 data/feature_selection_GA.csv
+*.csv
