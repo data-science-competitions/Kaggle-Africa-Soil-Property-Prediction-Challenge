@@ -27,6 +27,7 @@ libSVM <- function(){
                            cost=param$cost,
                            kernel="radial",
                            scale=FALSE,
+                           cachesize=512,
                            ...)
         }
         libSVM$fit <- libSVMFit

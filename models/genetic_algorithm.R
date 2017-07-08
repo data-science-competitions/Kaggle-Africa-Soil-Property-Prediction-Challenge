@@ -5,12 +5,16 @@
 #  \____/_/   \_\ 
 #
 # <https://www.jstatsoft.org/article/view/v053i04/v53i04.pdf>
-label <- c("Ca","P","pH","SOC","Sand")[1]
+labels <- c("Ca","P","pH","SOC","Sand")
+label <- labels[5]
+cost <- c(1e0,1e0,1e0,1e0,1e0)
+names(cost) <- labels
 
 
 #########
 # Setup #
 #########
+par(pty="s")
 destfile = file.path(getwd(),"data","feature_selection_GA.csv")
 # Copy the data
 X = train.infrared
@@ -45,8 +49,8 @@ fitness <- function(string){
         mdl <- train(x=x, y=y,
                      method=libSVM(), 
                      trControl=fitControl,
-                     tuneGrid=expand.grid(cost=1), 
-                     preProc=c("center", "scale"))
+                     #preProc=c("center", "scale")
+                     tuneGrid=expand.grid(cost=cost[[label]]))
         # evaluate the model
         RMSE = mean(mdl$resample$RMSE)
         return(-RMSE)
@@ -107,6 +111,14 @@ stopCluster(cl) # shut down the cluster
 # Summary #
 ###########
 summary(GA)
+
+
+###############
+# Save Visual #
+###############
+destimage = file.path(getwd(), "reports", paste0("genetic algorithm for ",label," ",Sys.Date(),".png"))
+dev.copy(png, destimage)
+dev.off()
 
 
 #######################
