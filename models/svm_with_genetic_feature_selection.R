@@ -6,7 +6,7 @@
 # http://www.kaggle.com/c/afsis-soil-properties/forums/t/10351/beating-the-benchmark
 set.seed(2014)
 labels <- c("Ca","P","pH","SOC","Sand")
-cost <- c(1e0,1e0,1e0,1e0,1e0)*1e3
+cost <- c(1e0,1e0,1e0,1e0,1e0)*1e4
 names(cost) <- labels
 
 
@@ -48,7 +48,7 @@ for (current_label in labels){
         mdl.svm <- e1071::svm(X_tr,
                               y,
                               scale=FALSE, cost=cost[[current_label]],
-                              cachesize=1024*10)
+                              cachesize=512)
         
         sampleSubmission[,current_label] <- predict(mdl.svm, X_te)
         cat(current_label,"was predicted successfully\n")
@@ -67,3 +67,5 @@ write.csv(sampleSubmission,
 # 2     | BART Benchmark        |               | 796   | 0.56551       |
 # 3     | SVM w. cost=1e0       | 2500          | 1050  | 0.69305       | 0.72128
 # 4     | SVM w. cost=1e3       | 2500          | 577   | 0.52256       | 0.45488
+# 5     | SVM w. cost=1e4       | 2500          | 61    | 0.49556       | 0.41910 
+# 6     | SVM w. cost=1e4       | GA            | 141   | 0.50244       | 0.42847
