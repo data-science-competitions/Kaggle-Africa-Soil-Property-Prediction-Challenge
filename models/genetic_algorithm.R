@@ -88,12 +88,14 @@ mfitness <- memoise(fitness)
 
 ###################
 # Start Evolution #
-###################                         
+###################
+gaControl("binary") # show the current values of GA
 GA <- ga(type="binary", fitness=mfitness,
          # Genetic nuances 
-         #selection=gaperm_nlrSelection,
-         #mutation=gareal_raMutation,
-         #elitism=dim(suggestions)[2],
+         #population="gabin_Population",
+         #selection="gabin_lrSelection",
+         #crossover="gabin_spCrossover",
+         #mutation="gabin_raMutation",
          popSize=availableCores*2,
          maxiter=100, run=100,
          names=colnames(train.infrared),
