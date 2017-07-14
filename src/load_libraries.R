@@ -15,11 +15,12 @@ packages.loader <- function(packages.list){
                 } # end for packages list
         ) # end suppressPackageStartupMessages
 } # end functions packages.loader
-packages.list = c("GA","memoise",             # Genetic algorithms
-                  "e1071",                    # SVM
-                  "caret",                    # Classification and regression tools
-                  "hashmap",                  # Map keys to values
-                  "snow","doRNG","doParallel" # Parallel computing
+packages.list = c("GA","memoise",              # Genetic algorithms
+                  "e1071",                     # SVM
+                  "caret",                     # Classification and regression tools
+                  "hashmap",                   # Map keys to values
+                  "snow","doRNG","doParallel", # Parallel computing
+                  "wavelets","wavethresh"      # Discrete Wavelet Transforms (DWT) tools
                   )
 packages.loader(packages.list)
 

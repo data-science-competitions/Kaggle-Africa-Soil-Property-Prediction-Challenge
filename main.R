@@ -15,5 +15,5 @@ source(file.path(getwd(),"src","load_the_data.R"))
 # source(file.path(getwd(),"report","exploratory_data_analysis.R"))
 
 # 4. Preprocess the Data
-# source(file.path(getwd(),"report","data_preprocessing_general.R"))
+source(file.path(getwd(),"src","data_preprocessing.R"))
 
