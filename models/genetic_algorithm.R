@@ -9,14 +9,13 @@ labels <- c("Ca","P","pH","SOC","Sand")
 label <- labels[1]
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e0
 names(cost) <- labels
-DWT <- TRUE # Should the Discrete Wavelet Transforms be applied?
+DWT <- FALSE # Should the Discrete Wavelet Transforms be applied?
 
 
 #########
 # Setup #
 #########
 par(pty="s")
-destfile = file.path(getwd(),"data","feature_selection_GA.csv")
 # Copy the data
 X = if(DWT) train.infrared.dwt else train.infrared
 y = train.Y[,label]
@@ -32,6 +31,20 @@ fitControl <- trainControl(
 availableCores = detectCores()
 cl <- makeCluster(availableCores, type="PSOCK", outfile="")   
 registerDoParallel(cl)
+
+
+#######################
+# Set Genetic Nuances #
+#######################
+gaControl("binary"=list(population=c("gabin_Population")[1],
+                        selection=c("gabin_lrSelection")[1], 
+                        crossover=c("gabin_spCrossover","gabin_uCrossover")[2],
+                        mutation=c("gabin_raMutation")[1]))
+# Set file name prefix
+file_prefix = paste0('(',gaControl("binary")$population,')',
+                     '(',gaControl("binary")$selection,')',
+                     '(',gaControl("binary")$crossover,')',
+                     '(',gaControl("binary")$mutation,')')
 
 
 ####################
@@ -67,6 +80,7 @@ suggestions = matrix(0, nrow=length(prime_numbers), ncol=ncol(X))
 for(i in 1:length(prime_numbers))
         suggestions[i,seq(from=1,to=ncol(X), by=prime_numbers[i])] = 1 
 # Get the previous creatures
+destfile = file.path(getwd(),"data",paste0(file_prefix,".csv"))
 if(file.exists(destfile)){
         # Read the file
         temp = read.csv(destfile)
@@ -90,16 +104,11 @@ if(file.exists(destfile)){
 mfitness <- memoise(fitness)
 
 
+
 ###################
 # Start Evolution #
 ###################
-gaControl("binary") # show the current values of GA
 GA <- ga(type="binary", fitness=mfitness,
-         # Genetic nuances 
-         #population="gabin_Population",
-         #selection="gabin_lrSelection",
-         #crossover="gabin_uCrossover", # Uniform crossover
-         #mutation="gareal_rsMutation",
          popSize=availableCores,
          pcrossover=0.8, 
          pmutation=0.1,
@@ -126,10 +135,10 @@ summary(GA)
 ###############
 if(DWT){
         destimage = file.path(getwd(), "reports", 
-                              paste0("(genetic algorithm)","(DWT ",2**lvl,")","(",label,")(",Sys.Date(),").png"))
+                              paste0(file_prefix,"(DWT ",2**lvl,")","(",label,")(",Sys.Date(),").png"))
 } else {
         destimage = file.path(getwd(), "reports", 
-                              paste0("(genetic algorithm)","(no DWT)","(",label,")(",Sys.Date(),").png"))
+                              paste0(file_prefix,"(no encoding)","(",label,")(",Sys.Date(),").png"))
 }
 dev.copy(png, destimage)
 dev.off()
