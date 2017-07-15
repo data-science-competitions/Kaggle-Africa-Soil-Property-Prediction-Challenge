@@ -14,3 +14,6 @@ train.infrared.dwt = WaveletTransform(subset(train.infrared,
 test.infrared.dwt = WaveletTransform(subset(test.infrared, 
                                             select=c(m4547.38:m599.76)), # 727 obs. of 2048 (2^11) features 
                                      lvl, sure_thresholding)
+# Set basis names
+colnames(train.infrared.dwt) = paste0("dwt_",(1:2**lvl)-1)
+colnames(test.infrared.dwt) = paste0("dwt_",(1:2**lvl)-1)

@@ -26,7 +26,6 @@ fitControl <- trainControl(
         method="cv",
         number=8,
         seeds=(803):(803+8+1),
-        #repeats=1, # relevant only when method = "repeatedcv"        
         allowParallel=TRUE,
         returnData=FALSE) # saves memory
 # Parallel Computing 
@@ -69,12 +68,16 @@ for(i in 1:length(prime_numbers))
         suggestions[i,seq(from=1,to=ncol(X), by=prime_numbers[i])] = 1 
 # Get the previous creatures
 if(file.exists(destfile)){
-        
+        # Read the file
         temp = read.csv(destfile)
-        previous_creatures = temp[temp$label %in% label,-1]
-        
-        if(nrow(previous_creatures)>0)
-                suggestions = rbind(suggestions,data.matrix(previous_creatures))
+        # Get the chromosome for the previous individuals of the same label
+        previous_creatures = temp[temp$label %in% label,-2:-1]
+        # Select only the most fitted individuals
+        if(nrow(previous_creatures)>0){
+                fitnessValue = temp[temp$label %in% label,2]
+                the_most_fitted_individual = previous_creatures[which.max(fitnessValue),]
+                suggestions = rbind(suggestions,data.matrix(the_most_fitted_individual))
+        }
 } 
 
 
@@ -95,17 +98,17 @@ GA <- ga(type="binary", fitness=mfitness,
          # Genetic nuances 
          #population="gabin_Population",
          #selection="gabin_lrSelection",
-         #crossover="gabin_spCrossover",
+         #crossover="gabin_uCrossover", # Uniform crossover
          #mutation="gareal_rsMutation",
          popSize=availableCores,
-         pcrossover = 0.8, 
-         pmutation = 0.1,
-         maxiter=100, run=100,
+         pcrossover=0.8, 
+         pmutation=0.1,
+         maxiter=100, run=250,
          names=colnames(X),
          nBits=ncol(X),
          suggestions=suggestions,
          parallel=TRUE,
-         min=10, max=100, # not relevant in the case of type="binary"
+         min=100, max=100, # not relevant in the case of type="binary"
          monitor=plot,
          seed=2047)
 forget(mfitness) # clear cache
@@ -135,9 +138,13 @@ dev.off()
 #######################
 # Export the solution #
 #######################
+# Get the chromosome of the most fitted individual
 solution = drop(GA@solution)
 if (!is.null(dim(solution))) solution = solution[,1]
-solution = data.frame(label=label,t(solution))
+# Get the fitted value
+fitnessValue = GA@fitnessValue[1]
+# Record the solution
+solution = data.frame(label=label,fitnessValue=fitnessValue,t(solution))
 
 # Check if file exists then add the new solution, otherwise create a new file
 if(file.exists(destfile)){
