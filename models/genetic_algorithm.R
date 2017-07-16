@@ -36,13 +36,11 @@ registerDoParallel(cl)
 #######################
 # Set Genetic Nuances #
 #######################
-gaControl("binary"=list(population=c("gabin_Population")[1],
-                        selection=c("gabin_lrSelection")[1], 
+gaControl("binary"=list(selection=c("gabin_lrSelection")[1], 
                         crossover=c("gabin_spCrossover","gabin_uCrossover")[2],
                         mutation=c("gabin_raMutation")[1]))
 # Set file name prefix
-file_prefix = paste0('(',gaControl("binary")$population,')',
-                     '(',gaControl("binary")$selection,')',
+file_prefix = paste0('(',gaControl("binary")$selection,')',
                      '(',gaControl("binary")$crossover,')',
                      '(',gaControl("binary")$mutation,')')
 
