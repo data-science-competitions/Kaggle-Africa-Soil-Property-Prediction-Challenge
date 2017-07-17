@@ -36,7 +36,7 @@ registerDoParallel(cl)
 #######################
 # Set Genetic Nuances #
 #######################
-gaControl("binary"=list(selection=c("gabin_lrSelection")[1], 
+gaControl("binary"=list(selection=c("gabin_lrSelection","gabin_rwSelection")[2], 
                         crossover=c("gabin_spCrossover","gabin_uCrossover")[2],
                         mutation=c("gabin_raMutation")[1]))
 # Set file name prefix
@@ -100,7 +100,6 @@ if(file.exists(destfile)){
 #' used to speed up calculations by using cached results. This is easily 
 #' obtained using the memoise package.
 mfitness <- memoise(fitness)
-
 
 
 ###################
