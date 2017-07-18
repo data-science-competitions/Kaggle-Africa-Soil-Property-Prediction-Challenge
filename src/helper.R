@@ -46,23 +46,54 @@ libSVM <- function(){
 }
 
 
+##################################
+# User Defined Genetic Operators #
+##################################
+#' Usage:
+#' selection = BoltzmannSelection
+#' OR
+#' selection = function(...) BoltzmannSelection(..., alpha = 0.8)
+#' 
+BoltzmannSelection <- function(object, alpha = 0.2,
+                               eps = gaControl(object@type)@eps, ...)
+{
+        f <- object@fitness
+        T0 <- max(f)-min(f)
+        k <- 1 + 100 * object@iter/object@maxiter
+        T <- max(T0 * (1 - alpha)^k, eps)
+        sel <- rep(NA, object@popSize)
+        for(i in 1:object@popSize) {
+                s <- sample(1:object@popSize, size = 2)
+                p <- exp(-abs(f[s[1]]-f[s[2]])/T)
+                if(f[s[1]] > f[s[2]]) {
+                        sel[i] <- if(p > runif(1)) s[2] else s[1]
+                } else {
+                        sel[i] <- if(p > runif(1)) s[1] else s[2]
+                }
+        }
+        out <- list(population = object@population[sel, , drop = FALSE],
+                    fitness = f[sel])
+        return(out)
+}
+
+
 #####################################
 # Discrete Wavelet Transforms (DWT) #
 #####################################
-## WaveletTransform
-## INPUT:
-## X.M: [n,2048] or [n,4096] dataframe containing mid-infrared absorbance measurements
-##
-## lvl: Number of basis function to construct. 1<=lvl<=10. 
-##      e.g. lvl=4 -> 2^4 = 16 basis function will be returned for each signal
-##
-## thresholding: TRUE/FALSE to use SURE shrinkage on signal
-##
-## OUTPUT:
-## X.W: A [n,2^lvl] dataframe containing each signal coefficients 
-##
-## Example: training.W <- Africa.WaveletTransform(training.M,9,FALSE)
-## 
+#' WaveletTransform
+#' INPUT:
+#' X.M: [n,2048] or [n,4096] dataframe containing mid-infrared absorbance measurements
+#'
+#' lvl: Number of basis function to construct. 1<=lvl<=10. 
+#'      e.g. lvl=4 -> 2^4 = 16 basis function will be returned for each signal
+#'
+#' thresholding: TRUE/FALSE to use SURE shrinkage on signal
+#'
+#' OUTPUT:
+#' X.W: A [n,2^lvl] dataframe containing each signal coefficients 
+#'
+#' Example: training.W <- Africa.WaveletTransform(training.M,9,FALSE)
+#' 
 WaveletTransform <- function(X.M, lvl, thresholding){
         ## Load the required packages for the project                                
         if(!require(wavethresh)) {install.packages(wavethresh)}
@@ -91,3 +122,4 @@ WaveletTransform <- function(X.M, lvl, thresholding){
         
         return(as.data.frame(X.W))
 }
+

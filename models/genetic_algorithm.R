@@ -36,9 +36,22 @@ registerDoParallel(cl)
 #######################
 # Set Genetic Nuances #
 #######################
-gaControl("binary"=list(selection=c("gabin_lrSelection","gabin_rwSelection")[2], 
+gaControl("binary"=list(selection=c("gabin_lrSelection","gabin_rwSelection","gareal_sigmaSelection","gabin_tourSelection")[4], 
                         crossover=c("gabin_spCrossover","gabin_uCrossover")[2],
                         mutation=c("gabin_raMutation")[1]))
+
+# Population size
+popSize = availableCores
+
+# Set the number of best fitness individuals to survive at each generation
+#' Because K-tournament selection guarantees to keep K copies of the best 
+#' individual, we disable the elitism mechanism 
+if(gaControl("binary")$selection == "gabin_tourSelection"){ 
+        elitism=0 
+} else {
+        elitism=max(1, round(popSize*0.05))
+}
+
 # Set file name prefix
 file_prefix = paste0('(',gaControl("binary")$selection,')',
                      '(',gaControl("binary")$crossover,')',
@@ -107,7 +120,8 @@ mfitness <- memoise(fitness)
 ###################
 startTime = Sys.time()
 GA <- ga(type="binary", fitness=mfitness,
-         popSize=availableCores,
+         popSize=popSize,
+         elitism=elitism,
          pcrossover=0.8, 
          pmutation=0.1,
          maxiter=100, run=250,
