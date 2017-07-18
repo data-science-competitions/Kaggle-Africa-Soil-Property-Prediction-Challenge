@@ -105,6 +105,7 @@ mfitness <- memoise(fitness)
 ###################
 # Start Evolution #
 ###################
+startTime = Sys.time()
 GA <- ga(type="binary", fitness=mfitness,
          popSize=availableCores,
          pcrossover=0.8, 
@@ -117,6 +118,7 @@ GA <- ga(type="binary", fitness=mfitness,
          min=100, max=100, # not relevant in the case of type="binary"
          monitor=plot,
          seed=2047)
+finishTime = Sys.time()
 forget(mfitness) # clear cache
 stopCluster(cl) # shut down the cluster
 
@@ -125,17 +127,20 @@ stopCluster(cl) # shut down the cluster
 # Summary #
 ###########
 summary(GA)
+timeDiff = round(as.numeric(finishTime-startTime, units="mins"),0)
 
 
 ###############
 # Save Visual #
 ###############
+file_suffix = paste0('(',timeDiff,' minutes',')',
+                     '(',Sys.Date(),')')
 if(DWT){
         destimage = file.path(getwd(), "reports", 
-                              paste0(file_prefix,"(DWT ",2**lvl,")","(",label,")(",Sys.Date(),").png"))
+                              paste0(file_prefix,"(DWT ",2**lvl,")","(",label,")",file_suffix,".png"))
 } else {
         destimage = file.path(getwd(), "reports", 
-                              paste0(file_prefix,"(no encoding)","(",label,")(",Sys.Date(),").png"))
+                              paste0(file_prefix,"(no encoding)","(",label,")",file_suffix,".png"))
 }
 dev.copy(png, destimage)
 dev.off()
