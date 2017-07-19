@@ -9,6 +9,7 @@ labels <- c("Ca","P","pH","Sand","SOC")
 label <- labels[1]
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e0
 names(cost) <- labels
+USE_SUGGESTIONS <- FALSE # check to see whether there are past suggestions?
 DWT <- FALSE # Should the Discrete Wavelet Transforms be applied?
 
 
@@ -39,6 +40,16 @@ registerDoParallel(cl)
 gaControl("binary"=list(selection=c("gabin_lrSelection","gabin_rwSelection","gareal_sigmaSelection","gabin_tourSelection")[4], 
                         crossover=c("gabin_spCrossover","gabin_uCrossover")[2],
                         mutation=c("gabin_raMutation")[1]))
+
+# Strategy Parameter Setting
+#' De Jong’s strategy parameters for online (offline) performance are:
+#' popSize = 30(80)
+#' pcrossover = 0.95(0.45)
+#' pmutation = 0.01(0.01)
+parameters = data.frame(maxgen=100, 
+                        popSize=max(8*2,availableCores), 
+                        pcrossover=0.8, 
+                        pmutation=0.1)
 
 # Set file name prefix
 file_prefix = paste0('(',gaControl("binary")$selection,')',
@@ -80,11 +91,11 @@ for(i in 1:length(prime_numbers))
         suggestions[i,seq(from=1,to=ncol(X), by=prime_numbers[i])] = 1 
 # Get the previous creatures
 destfile = file.path(getwd(),"data",paste0(file_prefix,".csv"))
-if(file.exists(destfile)){
+if(file.exists(destfile) & USE_SUGGESTIONS){
         # Read the file
         temp = read.csv(destfile)
         # Get the chromosome for the previous individuals of the same label
-        previous_creatures = temp[temp$label %in% label,-2:-1]
+        previous_creatures = temp[temp$label %in% label,-6:-1]
         # Select only the most fitted individuals
         if(nrow(previous_creatures)>0){
                 fitnessValue = temp[temp$label %in% label,2]
@@ -108,10 +119,10 @@ mfitness <- memoise(fitness)
 ###################
 startTime = Sys.time()
 GA <- ga(type="binary", fitness=mfitness,
-         popSize=availableCores,
-         pcrossover=0.8, 
-         pmutation=0.1,
-         maxiter=100, #run=100,
+         popSize=parameters$popSize,
+         pcrossover=parameters$pcrossover, 
+         pmutation=parameters$pmutation,
+         maxiter=parameters$maxgen, #run=100,
          names=colnames(X),
          nBits=ncol(X),
          suggestions=suggestions,
@@ -156,8 +167,7 @@ if (!is.null(dim(solution))) solution = solution[,1]
 # Get the fitted value
 fitnessValue = GA@fitnessValue[1]
 # Record the solution
-solution = data.frame(label=label,fitnessValue=fitnessValue,t(solution))
-
+solution = data.frame(label=label,fitnessValue=fitnessValue,as.vector(parameters),t(solution))
 # Check if file exists then add the new solution, otherwise create a new file
 if(file.exists(destfile)){
         
