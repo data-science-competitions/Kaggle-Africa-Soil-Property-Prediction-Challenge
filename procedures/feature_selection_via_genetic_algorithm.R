@@ -5,7 +5,7 @@
 #  \____/_/   \_\ 
 #
 # <https://www.jstatsoft.org/article/view/v053i04/v53i04.pdf>
-labels <- c("Ca","P","pH","SOC","Sand")
+labels <- c("Ca","P","pH","Sand","SOC")
 label <- labels[1]
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e0
 names(cost) <- labels
