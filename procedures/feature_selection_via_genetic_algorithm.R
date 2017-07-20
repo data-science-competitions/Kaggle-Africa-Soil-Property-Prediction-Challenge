@@ -10,7 +10,7 @@ label <- labels[1]
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e0
 names(cost) <- labels
 USE_SUGGESTIONS <- FALSE # check to see whether there are past suggestions?
-DWT <- FALSE # Should the Discrete Wavelet Transforms be applied?
+EXECUTION_ID <- paste0(sample(c(letters,toupper(letters),0:9,0:9),12),collapse="")
 
 
 #########
@@ -18,7 +18,7 @@ DWT <- FALSE # Should the Discrete Wavelet Transforms be applied?
 #########
 par(pty="s")
 # Copy the data
-X = if(DWT) train.infrared.dwt else train.infrared
+X = train.infrared
 y = train.Y[,label]
 # Setup the computational nuances of the model training phase
 fitControl <- trainControl(
@@ -40,21 +40,19 @@ registerDoParallel(cl)
 gaControl("binary"=list(selection=c("gabin_lrSelection","gabin_rwSelection","gareal_sigmaSelection","gabin_tourSelection")[4], 
                         crossover=c("gabin_spCrossover","gabin_uCrossover")[2],
                         mutation=c("gabin_raMutation")[1]))
-
+parameters = data.frame(selection=gaControl("binary")$selection,
+                        crossover=gaControl("binary")$crossover,
+                        mutation=gaControl("binary")$mutation,
+                        stringsAsFactors=FALSE)
 # Strategy Parameter Setting
 #' De Jong’s strategy parameters for online (offline) performance are:
 #' popSize = 30(80)
 #' pcrossover = 0.95(0.45)
 #' pmutation = 0.01(0.01)
-parameters = data.frame(maxgen=100, 
-                        popSize=max(8*2,availableCores), 
-                        pcrossover=0.95, 
-                        pmutation=0.1)
-
-# Set file name prefix
-file_prefix = paste0('(',gaControl("binary")$selection,')',
-                     '(',gaControl("binary")$crossover,')',
-                     '(',gaControl("binary")$mutation,')')
+parameters$maxgen = 100
+parameters$popSize = max(8*2,availableCores)
+parameters$pcrossover = 0.95
+parameters$pmutation = 0.1
 
 
 ####################
@@ -90,12 +88,12 @@ suggestions = matrix(0, nrow=length(prime_numbers), ncol=ncol(X))
 for(i in 1:length(prime_numbers))
         suggestions[i,seq(from=1,to=ncol(X), by=prime_numbers[i])] = 1 
 # Get the previous creatures
-destfile = file.path(getwd(),"data",paste0(file_prefix,".csv"))
+destfile = file.path(getwd(),"data","features selected by GA.csv")
 if(file.exists(destfile) & USE_SUGGESTIONS){
         # Read the file
         temp = read.csv(destfile)
         # Get the chromosome for the previous individuals of the same label
-        previous_creatures = temp[temp$label %in% label,-6:-1]
+        previous_creatures = temp[temp$label %in% label,-12:-1]
         # Select only the most fitted individuals
         if(nrow(previous_creatures)>0){
                 fitnessValue = temp[temp$label %in% label,2]
@@ -145,16 +143,19 @@ timeDiff = round(as.numeric(finishTime-startTime, units="mins"),0)
 ###############
 # Save Visual #
 ###############
-file_suffix = paste0('(',timeDiff,' minutes',')',
-                     '(',Sys.Date(),')')
-if(DWT){
-        destimage = file.path(getwd(), "reports", 
-                              paste0(file_prefix,"(DWT ",2**lvl,")","(",label,")",file_suffix,".png"))
-} else {
-        destimage = file.path(getwd(), "reports", 
-                              paste0(file_prefix,"(no encoding)","(",label,")",file_suffix,".png"))
-}
-dev.copy(png, destimage)
+# Set the folder name 
+folder_name = paste0('(',parameters$selection,')',
+                     '(',parameters$crossover,')',
+                     '(',parameters$mutation,')')
+folder_path = file.path(getwd(),'figures',folder_name)
+dir.create(folder_path, recursive=TRUE, showWarnings=FALSE)
+# Save Image
+image_info = paste0('(',label,')',
+                    '(popSize=',parameters$popSize,')',
+                    '(pcrossover=',parameters$pcrossover,')',
+                    '(pmutation=',parameters$pmutation,')')
+image_path = file.path(folder_path,paste0(image_info,'(',EXECUTION_ID,')',".png"))
+dev.copy(png, image_path)
 dev.off()
 
 
@@ -167,7 +168,10 @@ if (!is.null(dim(solution))) solution = solution[,1]
 # Get the fitted value
 fitnessValue = GA@fitnessValue[1]
 # Record the solution
-solution = data.frame(label=label,fitnessValue=fitnessValue,as.vector(parameters),t(solution))
+solution = data.frame(executionID=EXECUTION_ID, executionDate=Sys.Date(), executionTimeInMinutes=timeDiff,
+                      label=label,fitnessValue=fitnessValue,
+                      as.vector(parameters),
+                      t(solution))
 # Check if file exists then add the new solution, otherwise create a new file
 if(file.exists(destfile)){
         
@@ -180,8 +184,3 @@ if(file.exists(destfile)){
         write.csv(solution, destfile, row.names=FALSE)
         
 }
-
-
-
-
-
