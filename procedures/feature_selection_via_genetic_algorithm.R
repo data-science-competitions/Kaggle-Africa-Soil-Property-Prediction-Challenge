@@ -48,7 +48,7 @@ gaControl("binary"=list(selection=c("gabin_lrSelection","gabin_rwSelection","gar
 #' pmutation = 0.01(0.01)
 parameters = data.frame(maxgen=100, 
                         popSize=max(8*2,availableCores), 
-                        pcrossover=0.8, 
+                        pcrossover=0.95, 
                         pmutation=0.1)
 
 # Set file name prefix
