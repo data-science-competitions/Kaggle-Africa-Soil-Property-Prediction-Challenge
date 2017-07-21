@@ -20,7 +20,8 @@ packages.list = c("GA","memoise",              # Genetic algorithms
                   "caret",                     # Classification and regression tools
                   "hashmap",                   # Map keys to values
                   "snow","doRNG","doParallel", # Parallel computing
-                  "wavelets","wavethresh"      # Discrete Wavelet Transforms (DWT) tools
+                  "wavelets","wavethresh",     # Discrete Wavelet Transforms (DWT) tools
+                  "rpivotTable"                # Report tools
                   )
 packages.loader(packages.list)
 

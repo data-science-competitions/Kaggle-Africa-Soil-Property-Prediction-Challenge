@@ -1,0 +1,67 @@
+---
+title: "Selected Features via Genetic Algorithm"
+author: "Harel Lustiger"
+date: "July 21, 2017"
+output: 
+  html_document: 
+    highlight: tango
+    theme: journal
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Different Parameter Settings and their Results
+
+The redder the better
+
+```{r fit_values, echo=FALSE}
+library(rpivotTable)
+
+setwd('..')
+file_path = file.path(getwd(),'data','features selected by GA.csv')
+
+if(file.exists(file_path)){
+        
+        # Load the file
+        data = read.csv(file_path, stringsAsFactors=FALSE)[,1:12]
+        # Pivot table
+        rpivotTable(data=data, 
+                    rows=c("label","selection","crossover"),
+                    cols=c("pcrossover","pmutation"), 
+                    vals="fitnessValue", aggregatorName="Average", rendererName="Row Heatmap", 
+                    width="100%", height="400px")
+        
+} else {
+        cat('\n',file_path,'\n')
+        cat("File does not exist")
+}
+```
+
+## Different Parameter Settings and their Execution Time
+
+Red is bad
+
+```{r execution_time, echo=FALSE}
+library(rpivotTable)
+
+setwd('..')
+file_path = file.path(getwd(),'data','features selected by GA.csv')
+
+if(file.exists(file_path)){
+        
+        # Load the file
+        data = read.csv(file_path, stringsAsFactors=FALSE)[,1:12]
+        # Pivot table
+        rpivotTable(data=data, 
+                    rows=c("label","selection","crossover"),
+                    cols=c("pcrossover","pmutation"), 
+                    vals="executionTimeInMinutes", aggregatorName="Minimum", rendererName="Row Heatmap", 
+                    width="100%", height="400px")
+        
+} else {
+        cat('\n',file_path,'\n')
+        cat("File does not exist")
+}
+```
