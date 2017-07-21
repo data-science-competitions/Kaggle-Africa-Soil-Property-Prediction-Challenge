@@ -169,7 +169,7 @@ if (!is.null(dim(solution))) solution = solution[,1]
 # Get the fitted value
 fitnessValue = GA@fitnessValue[1]
 # Record the solution
-solution = data.frame(executionID=EXECUTION_ID, executionDate=Sys.Date(), executionTimeInMinutes=timeDiff,
+solution = data.frame(executionID=EXECUTION_ID, executionDate=as.character(Sys.Date()), executionTimeInMinutes=timeDiff,
                       label=label,fitnessValue=fitnessValue,
                       as.vector(parameters),
                       t(solution),
