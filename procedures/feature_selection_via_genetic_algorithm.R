@@ -172,11 +172,12 @@ fitnessValue = GA@fitnessValue[1]
 solution = data.frame(executionID=EXECUTION_ID, executionDate=Sys.Date(), executionTimeInMinutes=timeDiff,
                       label=label,fitnessValue=fitnessValue,
                       as.vector(parameters),
-                      t(solution))
+                      t(solution),
+                      stringsAsFactors=FALSE)
 # Check if file exists then add the new solution, otherwise create a new file
 if(file.exists(destfile)){
         
-        temp = read.csv(destfile)
+        temp = read.csv(destfile, stringsAsFactors=FALSE)
         temp = rbind(temp,solution)
         write.csv(temp, destfile, row.names=FALSE)
         
