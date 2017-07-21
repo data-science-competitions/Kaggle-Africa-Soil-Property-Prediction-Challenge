@@ -5,13 +5,13 @@
 #  \____/_/   \_\ 
 #
 # <https://www.jstatsoft.org/article/view/v053i04/v53i04.pdf>
-set.seed(NULL)
-EXECUTION_ID <- paste0(sample(c(letters,toupper(letters),0:9,0:9),12),collapse="")
 labels <- c("Ca","P","pH","Sand","SOC")
 label <- labels[1]
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e0
 names(cost) <- labels
 USE_SUGGESTIONS <- FALSE # check to see whether there are past suggestions?
+set.seed(NULL)
+EXECUTION_ID <- paste0(sample(c(letters,toupper(letters),0:9,0:9),12),collapse="")
 
 
 #########
