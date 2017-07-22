@@ -5,8 +5,8 @@
 # This script is inspired from the python code published at
 # http://www.kaggle.com/c/afsis-soil-properties/forums/t/10351/beating-the-benchmark
 set.seed(2014)
-labels <- c("Ca","P","pH","SOC","Sand")
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e4
+labels <- c("Ca","P","pH","Sand","SOC")
 names(cost) <- labels
 
 
@@ -22,15 +22,15 @@ suggestions[,1531:3578] = 1
 suggestions = as.data.frame(suggestions)
 
 # 2. Load the features suggested by the genetic algorithm
-destfile = file.path(getwd(),"data","feature_selection_GA.csv")
-if(file.exists(destfile)){
-        suggestions_df = read.csv(destfile)
-        # Take the latest suggestion for each label
-        suggestions_df = suggestions_df[!duplicated(suggestions_df[,"label"],fromLast=TRUE),]
-        # Update the default suggestions
-        for(current_label in suggestions_df[,"label"])
-                suggestions[current_label,] = subset(suggestions_df, label==current_label, select=-label)
+for(label in labels){
+        
+        selected_columns = getSelectedFeatures(label)
+        if(is.null(selected_columns)) next
+        suggestions[label,] = selected_columns
+                
 }
+
+
 
 
 ##########################
@@ -69,3 +69,5 @@ write.csv(sampleSubmission,
 # 4     | SVM w. cost=1e3       | 2500          | 577   | 0.52256       | 0.45488
 # 5     | SVM w. cost=1e4       | 2500          | 61    | 0.49556       | 0.41910 
 # 6     | SVM w. cost=1e4       | GA            | 141   | 0.50244       | 0.42847
+# 7     | SVM w. cost=1e4       | GA            | 490   | 0.51318       | 0.43284
+# 8     | SVM w. custom costs   | 2500          | 71    | 0.49625       | 0.42853

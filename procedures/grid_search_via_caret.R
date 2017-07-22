@@ -40,7 +40,7 @@ fitControl = trainControl(
 ###############
 # Tuning Grid #
 ###############
-costs = round(exp(seq(from=1,to=log(1e4),length.out=8)))
+costs = round(exp(seq(from=1,to=log(2e4),length.out=2*8)))
 svmGrid = expand.grid(cost=costs,
                       stringsAsFactors=FALSE)
 
@@ -63,6 +63,8 @@ stopCluster(cl) # shut down the cluster
 ###################
 # Analyze Results #
 ###################
-#timeDiff = round(as.numeric(finishTime-startTime, units="mins"),0)
-round(as.numeric(finishTime-startTime, units="mins"),0)
+timeDiff = round(as.numeric(finishTime-startTime, units="mins"),0)
+cat('\nFinished in',timeDiff,'minutes')
 svmFit
+plot(svmFit)
+
