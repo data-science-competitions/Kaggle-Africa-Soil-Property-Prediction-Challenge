@@ -2,6 +2,13 @@
 #                               Helper Functions                               #
 ################################################################################
 
+####################
+# Create Unique ID #
+####################
+generateID <- function(len=12){
+        set.seed(NULL)
+        paste0(sample(c(letters,toupper(letters),0:9,0:9),len),collapse="")
+}
 
 #######################
 # Caret Custom Models #
@@ -123,3 +130,28 @@ WaveletTransform <- function(X.M, lvl, thresholding){
         return(as.data.frame(X.W))
 }
 
+
+##########################
+# Load Selected Features #
+##########################
+getSelectedFeatures <- function(label){
+        
+        # 1. Get the suggestion file path
+        destfile = file.path(getwd(), GLOBALS[["FEATURE_SELECTION_FOLDER"]], paste0(GLOBALS[["FEATURE_SELECTION_VIA_GA"]],'.csv'))
+        
+        # 2. Check that the file exists
+        if(!file.exists(destfile)) return(NULL)
+        
+        # 3. Load suggestions
+        # 3.1. Read the file
+        temp = read.csv(destfile)
+        # 3.2. Get the chromosome for the previous individuals of the same label
+        previous_creatures = temp[temp$label %in% label,-12:-1]
+        # 3.3. Select only the most fitted individuals
+        if(nrow(previous_creatures)==0) return(NULL)
+        fitnessValue = temp[temp$label %in% label,2]
+        the_most_fitted_individual = previous_creatures[which.max(fitnessValue),]
+        # 3.4. Return the most fitted individuals 
+        return(the_most_fitted_individual)
+        
+}

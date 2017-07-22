@@ -25,6 +25,16 @@ packages.list = c("GA","memoise",              # Genetic algorithms
                   )
 packages.loader(packages.list)
 
+
+#############
+# Constants #
+#############
+GLOBALS = list(FEATURE_SELECTION_FOLDER='data',
+               FEATURE_SELECTION_VIA_GA='features selected by GA')
+
+
+
+
 # Optional:
 #install.packages("tidyverse")
 #library(tidyverse)

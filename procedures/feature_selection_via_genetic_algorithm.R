@@ -10,8 +10,7 @@ label <- labels[1]
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e0
 names(cost) <- labels
 USE_SUGGESTIONS <- FALSE # check to see whether there are past suggestions?
-set.seed(NULL)
-EXECUTION_ID <- paste0(sample(c(letters,toupper(letters),0:9,0:9),12),collapse="")
+EXECUTION_ID <- generateID()
 
 
 #########
@@ -89,19 +88,15 @@ suggestions = matrix(0, nrow=length(prime_numbers), ncol=ncol(X))
 for(i in 1:length(prime_numbers))
         suggestions[i,seq(from=1,to=ncol(X), by=prime_numbers[i])] = 1 
 # Get the previous creatures
-destfile = file.path(getwd(),"data","features selected by GA.csv")
-if(file.exists(destfile) & USE_SUGGESTIONS){
-        # Read the file
-        temp = read.csv(destfile)
-        # Get the chromosome for the previous individuals of the same label
-        previous_creatures = temp[temp$label %in% label,-12:-1]
-        # Select only the most fitted individuals
-        if(nrow(previous_creatures)>0){
-                fitnessValue = temp[temp$label %in% label,2]
-                the_most_fitted_individual = previous_creatures[which.max(fitnessValue),]
+if(USE_SUGGESTIONS){
+        # check if a previous creatures exists
+        the_most_fitted_individual = getSelectedFeatures(label)
+        # append the most fitted individual
+        if(!is.null(the_most_fitted_individual)) 
                 suggestions = rbind(suggestions,data.matrix(the_most_fitted_individual))
-        }
-} 
+}
+
+
 
 
 ###############
@@ -175,6 +170,7 @@ solution = data.frame(executionID=EXECUTION_ID, executionDate=as.character(Sys.D
                       t(solution),
                       stringsAsFactors=FALSE)
 # Check if file exists then add the new solution, otherwise create a new file
+destfile = file.path(getwd(), GLOBALS[["FEATURE_SELECTION_FOLDER"]], paste0(GLOBALS[["FEATURE_SELECTION_VIA_GA"]],'.csv'))
 if(file.exists(destfile)){
         
         temp = read.csv(destfile, stringsAsFactors=FALSE)
