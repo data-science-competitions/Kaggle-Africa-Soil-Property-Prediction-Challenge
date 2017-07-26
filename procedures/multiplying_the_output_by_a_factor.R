@@ -2,7 +2,7 @@
 #                      Multiplying the Output by a Factor                      #
 ################################################################################
 # Choose a label
-set.seed(1021)
+set.seed(2617)
 labels <- c("Ca","P","pH","Sand","SOC")
 label <- labels[1]
 
@@ -10,11 +10,14 @@ label <- labels[1]
 #####################
 # Split the dataset #
 #####################
-p = runif(nrow(train.infrared))
-X_train = train.infrared[p<0.7,]
-X_test = train.infrared[p>=0.7,]
-y_train = train.Y[p<0.7,label]
-y_test = train.Y[p>=0.7,label]
+n = nrow(train.infrared)
+s_train = sample(n, replace=TRUE)
+s_test = sample(n, replace=TRUE) 
+
+X_train = train.infrared[s_train,]
+X_test = train.infrared[s_test,]
+y_train = train.Y[s_train,label]
+y_test = train.Y[s_test,label]
 
 
 ##############################
