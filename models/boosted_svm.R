@@ -8,7 +8,7 @@ set.seed(2014)
 labels <- c("Ca","P","pH","Sand","SOC")
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e4
 names(cost) <- labels
-n_bs <- 40 # number of bootsrap models to create
+n_bs <- 200 # number of bootsrap models to create
 
 
 #################
@@ -132,4 +132,19 @@ for(current_label in labels){
 cat('Done!')
 
 
-
+##################
+# Visualisations #
+##################
+par(mfrow=c(2,2))
+# Read the bootstrap predictions file
+pred = list()
+for(current_label in labels)
+        pred[[current_label]] = read.xlsx(file_path, sheetName=current_label,header=FALSE)
+# Interactive Plotting with Manipulate
+xlim=t(apply(Y_tr,2,range))
+manipulate(
+        for(current_label in setdiff(labels,"P"))
+                plot(density(unlist(pred[[current_label]][obs_id,])), 
+                     xlim=xlim[current_label,], main=current_label), 
+        obs_id=slider(1,727,initial=sample(727,1),step=1)
+)
