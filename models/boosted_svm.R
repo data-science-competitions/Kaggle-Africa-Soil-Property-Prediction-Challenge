@@ -8,7 +8,7 @@ set.seed(2014)
 labels <- c("Ca","P","pH","Sand","SOC")
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e4
 names(cost) <- labels
-n_boot <- 40 # number of bootsrap models to create
+n_bs <- 40 # number of bootsrap models to create
 
 
 #################
@@ -31,11 +31,11 @@ registerDoSNOW(cl)
 # Fit Models #
 ##############
 # Set progress bar
-pb <- txtProgressBar(max=n_boot, style=3)
+pb <- txtProgressBar(max=n_bs, style=3)
 progress <- function(n) setTxtProgressBar(pb, n)
 opts <- list(progress=progress)
 # Begin execution
-svm_bootstrap_models <- foreach(i=1:n_boot, .options.snow=opts, .errorhandling=c('stop'), .packages=c('foreach')) %dopar% {
+svm_bootstrap_models <- foreach(i=1:n_bs, .options.snow=opts, .errorhandling='stop', .packages=c('foreach')) %dopar% {
         
         #########
         # Setup #
@@ -51,7 +51,7 @@ svm_bootstrap_models <- foreach(i=1:n_boot, .options.snow=opts, .errorhandling=c
         ######################################
         # Fit Models to the Bootstrap Sample #
         ######################################
-        foreach(current_label=labels, .errorhandling=c('stop')) %do% {
+        foreach(current_label=labels, .errorhandling='stop', .inorder=FALSE) %do% {
                 # Fit model to the data
                 svm_model <- e1071::svm(
                         # Data
@@ -64,15 +64,15 @@ svm_bootstrap_models <- foreach(i=1:n_boot, .options.snow=opts, .errorhandling=c
                         cachesize=512,
                         fitted=FALSE)
                 # Append the model to the list
-                if(current_label == "Ca")
+                if(current_label=="Ca")
                         svm_models[["Ca"]] = svm_model
-                else if(current_label == "P")
+                else if(current_label=="P")
                         svm_models[["P"]] = svm_model 
-                else if(current_label == "pH")
+                else if(current_label=="pH")
                         svm_models[["pH"]] = svm_model 
-                else if(current_label == "Sand")
+                else if(current_label=="Sand")
                         svm_models[["Sand"]] = svm_model 
-                else if(current_label == "SOC")
+                else if(current_label=="SOC")
                         svm_models[["SOC"]] = svm_model
                 else
                         stop("No recognized label")
@@ -80,7 +80,6 @@ svm_bootstrap_models <- foreach(i=1:n_boot, .options.snow=opts, .errorhandling=c
         
         return(svm_models)
 }
-
 close(pb)
 stopCluster(cl)
 
@@ -88,7 +87,9 @@ stopCluster(cl)
 ########################
 # Predict the Test set #
 ########################
+cat('\nPredicting the test set...')
 # Allocate prediction matrices
+n_bm = length(svm_bootstrap_models)
 n_bs = length(svm_bootstrap_models)
 n_te = nrow(X_te)
 pred = list("Ca"=matrix(0,nrow=n_te,ncol=n_bs), 
@@ -120,14 +121,15 @@ for(i in 1:l){
 cat('\nSaving predictions in excel file...')
 
 folder_path = file.path(getwd(),'data')
-file_path = file.path(folder_path,"bootstrap_svm_predictions.xlsx")
 dir.create(folder_path, showWarnings=FALSE)
+file_path = file.path(folder_path,"bootstrap_svm_predictions.xlsx")
+unlink(file_path, force=TRUE)
 
 for(current_label in labels){
         write.xlsx2(pred[[current_label]], file_path, sheetName=current_label,
                     col.names=FALSE, row.names=FALSE, append=TRUE)
 }
-
 cat('Done!')
+
 
 

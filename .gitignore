@@ -19,3 +19,4 @@ data/feature_selection.csv
 data/feature_selection_GA.csv
 *.png
 *.csv
+*.xlsx
