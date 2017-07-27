@@ -44,7 +44,7 @@ svm_bootstrap_models <- foreach(i=1:n_boot, .options.snow=opts, .errorhandling=c
         svm_models = list()
         # Bootstrap the data
         set.seed(i)
-        s = sample(nrow(X), replace=TRUE)
+        s = sample(nrow(X_tr), replace=TRUE)
         X_b = X_tr[s,]
         Y_b = Y_tr[s,]
         
