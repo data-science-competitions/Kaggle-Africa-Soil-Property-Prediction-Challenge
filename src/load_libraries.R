@@ -22,8 +22,7 @@ packages.list = c("GA","memoise",                                               
                   "snow","doSNOW","doRNG","doParallel","foreach",               # Parallel computing
                   "wavelets","wavethresh",                                      # Discrete Wavelet Transforms (DWT) tools
                   "rpivotTable",                                                # Report tools
-                  "manipulate",                                                 # Plotting Tools
-                  "xlsx")
+                  "manipulate")                                                 # Plotting Tools
 packages.loader(packages.list)
 
 

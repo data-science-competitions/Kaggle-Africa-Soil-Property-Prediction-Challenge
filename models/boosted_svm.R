@@ -4,10 +4,11 @@
 # Beating the benchmark in Kaggle AFSIS Challenge.
 # This script is inspired from the python code published at
 # http://www.kaggle.com/c/afsis-soil-properties/forums/t/10351/beating-the-benchmark
+source(file.path(getwd(),"src","helper_boosted_svm.R"))
 set.seed(2014)
 labels <- c("Ca","P","pH","Sand","SOC")
-cost <- c(1e0,1e0,1e0,1e0,1e0)*1e4
-names(cost) <- labels
+costs <- c(1e0,1e0,1e0,1e0,1e0)*1e4
+names(costs) <- labels
 n_bs <- 200 # number of bootsrap models to create
 
 
@@ -19,132 +20,71 @@ X_tr = train.infrared[,1531:3578]
 Y_tr = train.Y
 
 
-######################
-# Parallel Computing #
-######################
-availableCores = detectCores()
-cl <- makeCluster(availableCores, type="PSOCK", outfile="")   
-registerDoSNOW(cl)
-
-
 ##############
 # Fit Models #
 ##############
-# Set progress bar
-pb <- txtProgressBar(max=n_bs, style=3)
-progress <- function(n) setTxtProgressBar(pb, n)
-opts <- list(progress=progress)
-# Begin execution
-svm_bootstrap_models <- foreach(i=1:n_bs, .options.snow=opts, .errorhandling='stop', .packages=c('foreach')) %dopar% {
-        
-        #########
-        # Setup #
-        #########
-        # Allocate list for the models
-        svm_models = list()
-        # Bootstrap the data
-        set.seed(i)
-        s = sample(nrow(X_tr), replace=TRUE)
-        X_b = X_tr[s,]
-        Y_b = Y_tr[s,]
-        
-        ######################################
-        # Fit Models to the Bootstrap Sample #
-        ######################################
-        foreach(current_label=labels, .errorhandling='stop', .inorder=FALSE) %do% {
-                # Fit model to the data
-                svm_model <- e1071::svm(
-                        # Data
-                        x=X_b,
-                        y=Y_b[,current_label],
-                        # Procedures
-                        scale=FALSE, shrinking=TRUE,
-                        cost=cost[[current_label]],
-                        # Memory 
-                        cachesize=512,
-                        fitted=FALSE)
-                # Append the model to the list
-                if(current_label=="Ca")
-                        svm_models[["Ca"]] = svm_model
-                else if(current_label=="P")
-                        svm_models[["P"]] = svm_model 
-                else if(current_label=="pH")
-                        svm_models[["pH"]] = svm_model 
-                else if(current_label=="Sand")
-                        svm_models[["Sand"]] = svm_model 
-                else if(current_label=="SOC")
-                        svm_models[["SOC"]] = svm_model
-                else
-                        stop("No recognized label")
-        }
-        
-        return(svm_models)
-}
-close(pb)
+# Start CPU cluster
+availableCores = detectCores()
+cl <- makeCluster(availableCores, type="PSOCK", outfile="")   
+registerDoSNOW(cl)
+# Fit models
+cat('\n',rep('#',80),
+    '\n# Fitting bootstrap models to the train data',
+    '\n',rep('#',80), sep="")
+svm_bootstrap_models = boosted_svm_fit(X=X_tr, Y=Y_tr, n_bs, costs)
+# Stop CPU cluster
 stopCluster(cl)
 
 
 ########################
 # Predict the Test set #
 ########################
-cat('\nPredicting the test set...')
-# Allocate prediction matrices
-n_bm = length(svm_bootstrap_models)
-n_bs = length(svm_bootstrap_models)
-n_te = nrow(X_te)
-pred = list("Ca"=matrix(0,nrow=n_te,ncol=n_bs), 
-            "P"=matrix(0,nrow=n_te,ncol=n_bs),
-            "pH"=matrix(0,nrow=n_te,ncol=n_bs),
-            "Sand"=matrix(0,nrow=n_te,ncol=n_bs),
-            "SOC"=matrix(0,nrow=n_te,ncol=n_bs))
-
-# Predict test set for each label
-l = length(svm_bootstrap_models)
-for(i in 1:l){
-        
-        percent = 100*i/l
-        if(i==1) cat('\nPredicting the test set...')
-        if(percent %% 10 == 0) cat(paste0('\t',percent,'%'))
-        for(current_label in labels){
-                
-                svm_model = svm_bootstrap_models[[i]][[current_label]]
-                pred[[current_label]][,i] = predict(svm_model, X_te)
-                
-        }
-        
-}
+cat('\n',rep('#',80),
+    '\n# Predicting the test set',
+    '\n',rep('#',80), sep="")
+pred = boosted_svm_prdicet(svm_bootstrap_models, X=X_te)
 
 
 ##################################
 # Save Predictions to Excel File #
 ##################################
-cat('\nSaving predictions in excel file...')
-
-folder_path = file.path(getwd(),'data')
+cat('\n',rep('#',80),
+    '\n# Exporting predictions to csv files',
+    '\n',rep('#',80), sep="")
+folder_path = file.path(getwd(),'data','bootstrap_predictions')
 dir.create(folder_path, showWarnings=FALSE)
-file_path = file.path(folder_path,"bootstrap_svm_predictions.xlsx")
-unlink(file_path, force=TRUE)
 
 for(current_label in labels){
-        write.xlsx2(pred[[current_label]], file_path, sheetName=current_label,
-                    col.names=FALSE, row.names=FALSE, append=TRUE)
+        file_path = file.path(folder_path,paste0(current_label,".csv"))
+        write.table(x=pred[[current_label]], file=file_path, sep=",", 
+                    row.names=FALSE, col.names=FALSE)
 }
-cat('Done!')
 
 
 ##################
 # Visualisations #
 ##################
-par(mfrow=c(2,2))
 # Read the bootstrap predictions file
+labels = c("Ca","P","pH","Sand","SOC")
+folder_path = file.path(getwd(),'data','bootstrap_predictions')
 pred = list()
-for(current_label in labels)
-        pred[[current_label]] = read.xlsx(file_path, sheetName=current_label,header=FALSE)
+for(current_label in labels){
+        file_path = file.path(folder_path,paste0(current_label,".csv"))
+        pred[[current_label]] = read.csv(file_path, header=FALSE)
+}
 # Interactive Plotting with Manipulate
+par(mfrow=c(2,2))
 xlim=t(apply(Y_tr,2,range))
+n_obs = nrow(pred[[1]])
 manipulate(
-        for(current_label in setdiff(labels,"P"))
-                plot(density(unlist(pred[[current_label]][obs_id,])), 
-                     xlim=xlim[current_label,], main=current_label), 
+        # Plot
+        for(current_label in setdiff(labels,"P")){
+                obs = unlist(pred[[current_label]][obs_id,])
+                dens = density(obs)
+                plot(dens, 
+                     xlim=xlim[current_label,], main=current_label)
+                points(obs, 0*obs, pch='|', col="red")
+        },
+        # Slider
         obs_id=slider(1,727,initial=sample(727,1),step=1)
 )
