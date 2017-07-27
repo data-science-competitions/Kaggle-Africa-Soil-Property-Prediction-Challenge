@@ -8,7 +8,7 @@ set.seed(2014)
 labels <- c("Ca","P","pH","Sand","SOC")
 cost <- c(1e0,1e0,1e0,1e0,1e0)*1e4
 names(cost) <- labels
-n_boot <- 200 # number of bootsrap models to create
+n_boot <- 40 # number of bootsrap models to create
 
 
 #################
@@ -114,18 +114,20 @@ for(i in 1:l){
 }
 
 
-####################
-# Save Predictions #
-####################
+##################################
+# Save Predictions to Excel File #
+##################################
+cat('\nSaving predictions in excel file...')
+
+folder_path = file.path(getwd(),'data')
+file_path = file.path(folder_path,"bootstrap_svm_predictions.xlsx")
+dir.create(folder_path, showWarnings=FALSE)
+
 for(current_label in labels){
-        
-        folder_path = file.path(getwd(),'data','bootstrap_predictions')
-        dir.create(folder_path, showWarnings=FALSE)
-        file_path = file.path(folder_path,paste0(current_label,".csv"))
-        write.csv(pred[[current_label]], file_path, row.names=FALSE)
-        
+        write.xlsx2(pred[[current_label]], file_path, sheetName=current_label,
+                    col.names=FALSE, row.names=FALSE, append=TRUE)
 }
 
-
+cat('Done!')
 
 

@@ -21,8 +21,9 @@ packages.list = c("GA","memoise",                                               
                   "hashmap",                                                    # Map keys to values
                   "snow","doSNOW","doRNG","doParallel","foreach",               # Parallel computing
                   "wavelets","wavethresh",                                      # Discrete Wavelet Transforms (DWT) tools
-                  "rpivotTable"                                                 # Report tools
-                  )
+                  "rpivotTable",                                                # Report tools
+                  "manipulate",                                                 # Plotting Tools
+                  "xlsx")
 packages.loader(packages.list)
 
 
