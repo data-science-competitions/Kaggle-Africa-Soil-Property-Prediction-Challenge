@@ -17,7 +17,7 @@ boosted_svm_fit <- function(X, Y,
         opts = list(progress=progress)
         
         # Begin execution
-        svm_bootstrap_models <- foreach(i=1:n_bs, .options.snow=opts, .errorhandling='stop', .packages=c('foreach')) %dopar% {
+        svm_bootstrap_models <- foreach(i=1:n_bs, .options.snow=opts, .errorhandling='stop', .packages=c('foreach'), .inorder=FALSE) %dopar% {
                 
                 #########
                 # Setup #
@@ -64,14 +64,14 @@ boosted_svm_fit <- function(X, Y,
                 
         }# end foreach dopar
         return(svm_bootstrap_models)
-        
+        close(pb)
 }# end boosted_svm_fit
 
 
 # ---------------------------------------------------------------------------- #
-#' @function boosted_svm_prdicet
+#' @function boosted_svm_predict
 #' @details Predict given set X
-boosted_svm_prdicet <- function(svm_bootstrap_models, X){
+boosted_svm_predict <- function(svm_bootstrap_models, X){
         
         labels <- c("Ca","P","pH","Sand","SOC")
         
@@ -102,7 +102,6 @@ boosted_svm_prdicet <- function(svm_bootstrap_models, X){
                 
         }# end for elements
         
-        close(pb)
         return(pred)
-}# end boosted_svm_prdicet
+}# end boosted_svm_predict
 

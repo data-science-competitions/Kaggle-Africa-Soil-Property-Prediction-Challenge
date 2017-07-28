@@ -42,7 +42,7 @@ stopCluster(cl)
 cat('\n',rep('#',80),
     '\n# Predicting the test set',
     '\n',rep('#',80), sep="")
-pred = boosted_svm_prdicet(svm_bootstrap_models, X=X_te)
+pred = boosted_svm_predict(svm_bootstrap_models, X=X_te)
 
 
 ##################################
@@ -84,7 +84,10 @@ manipulate(
                 plot(dens, 
                      xlim=xlim[current_label,], main=current_label)
                 points(obs, 0*obs, pch='|', col="red")
+                # Add the train set real value (if applicable)
+                if(n_obs==1157) 
+                        abline(v=Y_tr[obs_id,current_label], col="blue", lty=2)
         },
         # Slider
-        obs_id=slider(1,727,initial=sample(727,1),step=1)
+        obs_id=slider(1,n_obs,initial=sample(n_obs,1),step=1)
 )
