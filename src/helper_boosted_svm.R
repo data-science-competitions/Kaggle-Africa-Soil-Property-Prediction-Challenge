@@ -79,11 +79,14 @@ boosted_svm_predict <- function(svm_bootstrap_models, X){
         n_bm = length(svm_bootstrap_models)
         n_bs = length(svm_bootstrap_models)
         n_sa = nrow(X)
-        pred = list("Ca"=matrix(0,nrow=n_sa,ncol=n_bs), 
-                    "P"=matrix(0,nrow=n_sa,ncol=n_bs),
-                    "pH"=matrix(0,nrow=n_sa,ncol=n_bs),
-                    "Sand"=matrix(0,nrow=n_sa,ncol=n_bs),
-                    "SOC"=matrix(0,nrow=n_sa,ncol=n_bs))
+        M = matrix(0,nrow=n_sa,ncol=n_bs)
+        row.names(M) = row.names(X)
+                
+        pred = list("Ca"=M, 
+                    "P"=M,
+                    "pH"=M,
+                    "Sand"=M,
+                    "SOC"=M)
         
         # Predict test set for each label
         l = length(svm_bootstrap_models)

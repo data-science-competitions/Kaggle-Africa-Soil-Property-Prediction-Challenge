@@ -57,7 +57,7 @@ dir.create(folder_path, showWarnings=FALSE)
 for(current_label in labels){
         file_path = file.path(folder_path,paste0(current_label,".csv"))
         write.table(x=pred[[current_label]], file=file_path, sep=",", 
-                    row.names=FALSE, col.names=FALSE)
+                    row.names=TRUE, col.names=FALSE)
 }
 
 
@@ -70,7 +70,9 @@ folder_path = file.path(getwd(),'data','bootstrap_predictions')
 pred = list()
 for(current_label in labels){
         file_path = file.path(folder_path,paste0(current_label,".csv"))
-        pred[[current_label]] = read.csv(file_path, header=FALSE)
+        DF = read.csv(file_path, header=FALSE)
+        row.names(DF) = DF[,1]
+        pred[[current_label]] = as.matrix(DF[,-1])
 }
 # Interactive Plotting with Manipulate
 par(mfrow=c(2,2))
