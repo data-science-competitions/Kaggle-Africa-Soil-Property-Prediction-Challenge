@@ -6,6 +6,13 @@ test <- read.csv(file.path(getwd(),"data","test.csv.gz"))
 sampleSubmission <- read.csv(file.path(getwd(),"data","sampleSubmission.csv.gz"))    
 
 
+#########################
+# Shuffle the Train set #
+#########################
+set.seed(280717)
+train = train[sample(nrow(train)),]
+
+
 #####################################
 # Split the variables into 2 groups #
 #####################################
