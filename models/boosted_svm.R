@@ -85,9 +85,35 @@ manipulate(
                      xlim=xlim[current_label,], main=current_label)
                 points(obs, 0*obs, pch='|', col="red")
                 # Add the train set real value (if applicable)
-                if(n_obs==1157) 
+                if(n_obs==1157){ 
                         abline(v=Y_tr[obs_id,current_label], col="blue", lty=2)
+                        abline(v=mean(obs,trim=0), col="red", lty=3)
+                }
         },
         # Slider
         obs_id=slider(1,n_obs,initial=sample(n_obs,1),step=1)
 )
+
+
+################################
+# Bootstrap RMSE for Train set #
+################################
+if(nrow(pred[[1]])==1157){
+        
+        RMSE_table = data.frame(row.names=1:n_bs)
+        for(current_label in labels){
+                
+                RMSE_current_label = apply(pred[[current_label]], 2,
+                                           function(x) RMSE(x,train.Y[,current_label]))
+                RMSE_table[,current_label] = RMSE_current_label
+                
+        }
+        # What is the estimated leaderboard score?
+        plot(density(rowMeans(RMSE_table)))
+        # What is the RMSE for each label?
+        colMeans(RMSE_table)
+        
+}
+
+
+
