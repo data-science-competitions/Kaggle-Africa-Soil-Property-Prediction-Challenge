@@ -98,6 +98,7 @@ manipulate(
 ################################
 # Bootstrap RMSE for Train set #
 ################################
+par(mfrow=c(1,1))
 if(nrow(pred[[1]])==1157){
         
         RMSE_table = data.frame(row.names=1:n_bs)
