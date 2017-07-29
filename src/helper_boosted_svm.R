@@ -97,7 +97,7 @@ boosted_svm_predict <- function(svm_bootstrap_models, X){
         pb = txtProgressBar(max=nrow(tasks), style=3)
         
         # Predict test set for each label
-        foreach(t=1:nrow(tasks), .options.snow=opts, .errorhandling='stop', .inorder=TRUE) %do% {
+        foreach(t=1:nrow(tasks), .errorhandling='stop', .inorder=TRUE) %do% {
                 
                 current_model = tasks[t,"model_num"]
                 current_label = tasks[t,"labels"]
