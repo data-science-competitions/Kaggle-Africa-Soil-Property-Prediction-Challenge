@@ -75,35 +75,38 @@ boosted_svm_predict <- function(svm_bootstrap_models, X){
         
         labels <- c("Ca","P","pH","Sand","SOC")
         
-        # Allocate prediction matrices
+        ################################
+        # Allocate prediction matrices #
+        ################################
         n_bs = length(svm_bootstrap_models)
         n_sa = nrow(X)
         M = matrix(0,nrow=n_sa,ncol=n_bs)
         row.names(M) = row.names(X)
-                
         pred = list("Ca"=M, 
                     "P"=M,
                     "pH"=M,
                     "Sand"=M,
                     "SOC"=M)
         
+        # Create task list
+        tasks = expand.grid(model_num=1:n_bs,
+                            labels=labels,
+                            stringsAsFactors=FALSE)
+        
         # Set progress bar
-        pb = txtProgressBar(max=n_bs, style=3)
+        pb = txtProgressBar(max=nrow(tasks), style=3)
         
         # Predict test set for each label
-        for(i in 1:n_bs){
+        foreach(t=1:nrow(tasks), .options.snow=opts, .errorhandling='stop', .inorder=TRUE) %do% {
                 
-                for(current_label in labels){
-                        
-                        svm_model = svm_bootstrap_models[[i]][[current_label]]
-                        pred[[current_label]][,i] = predict(svm_model, X)
-                                           
-                }# end for labels
+                current_model = tasks[t,"model_num"]
+                current_label = tasks[t,"labels"]
                 
-                setTxtProgressBar(pb,i) 
+                svm_model = svm_bootstrap_models[[current_model]][[current_label]]
+                pred[[current_label]][,current_model] = predict(svm_model, X)
                 
-        }# end for elements
-        
+                setTxtProgressBar(pb,t) 
+        }
         
         close(pb)
         return(pred)
