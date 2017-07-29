@@ -76,7 +76,6 @@ boosted_svm_predict <- function(svm_bootstrap_models, X){
         labels <- c("Ca","P","pH","Sand","SOC")
         
         # Allocate prediction matrices
-        n_bm = length(svm_bootstrap_models)
         n_bs = length(svm_bootstrap_models)
         n_sa = nrow(X)
         M = matrix(0,nrow=n_sa,ncol=n_bs)
@@ -88,23 +87,25 @@ boosted_svm_predict <- function(svm_bootstrap_models, X){
                     "Sand"=M,
                     "SOC"=M)
         
+        # Set progress bar
+        pb = txtProgressBar(max=n_bs, style=3)
+        
         # Predict test set for each label
-        l = length(svm_bootstrap_models)
-        for(i in 1:l){
-                
-                percent = 100*i/l
-                if(i==1) cat('\nPredicting the test set...')
-                if(percent %% 10 == 0) cat(paste0('\t',percent,'%'))
+        for(i in 1:n_bs){
                 
                 for(current_label in labels){
                         
                         svm_model = svm_bootstrap_models[[i]][[current_label]]
                         pred[[current_label]][,i] = predict(svm_model, X)
-                        
+                                           
                 }# end for labels
+                
+                setTxtProgressBar(pb,i) 
                 
         }# end for elements
         
+        
+        close(pb)
         return(pred)
 }# end boosted_svm_predict
 
