@@ -51,11 +51,15 @@ pred = boosted_svm_predict(svm_bootstrap_models, X=X_te)
 cat('\n',rep('#',80),
     '\n# Exporting predictions to csv files',
     '\n',rep('#',80), sep="")
-folder_path = file.path(getwd(),'data','bootstrap_predictions')
+folder_path = file.path(getwd(),'data','predictions')
 dir.create(folder_path, showWarnings=FALSE)
 
+model_type = 'svm'
+set_type = ifelse(nrow(pred[[1]])==nrow(X_tr), "train", "test")
+
 for(current_label in labels){
-        file_path = file.path(folder_path,paste0(current_label,".csv"))
+        file_name = paste0('(',model_type,')','(',set_type,')','(',current_label,')','.csv')
+        file_path = file.path(folder_path,file_name)
         write.table(x=pred[[current_label]], file=file_path, sep=",", 
                     row.names=TRUE, col.names=FALSE)
 }
@@ -66,10 +70,14 @@ for(current_label in labels){
 ##################
 # Read the bootstrap predictions file
 labels = c("Ca","P","pH","Sand","SOC")
-folder_path = file.path(getwd(),'data','bootstrap_predictions')
+chosen_model = c('svm')[1]
+chosen_set = c('train','test')[1]
+
+folder_path = file.path(getwd(),'data','predictions')
 pred = list()
 for(current_label in labels){
-        file_path = file.path(folder_path,paste0(current_label,".csv"))
+        file_name = paste0('(',chosen_model,')','(',chosen_set,')','(',current_label,')','.csv')
+        file_path = file.path(folder_path,file_name)
         DF = read.csv(file_path, header=FALSE)
         row.names(DF) = DF[,1]
         pred[[current_label]] = as.matrix(DF[,-1])
