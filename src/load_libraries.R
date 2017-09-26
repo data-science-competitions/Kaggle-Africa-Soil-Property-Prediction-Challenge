@@ -16,6 +16,7 @@ packages.loader <- function(packages.list){
         ) # end suppressPackageStartupMessages
 } # end functions packages.loader
 packages.list = c("GA","memoise",                                               # Genetic algorithms
+                  "car",                                                        # Data Diagnostics
                   "e1071",                                                      # SVM
                   "caret",                                                      # Classification and regression tools
                   "hashmap",                                                    # Map keys to values
